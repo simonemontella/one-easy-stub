@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/desktop/">
+    <Project Path="DesktopFrontend/DesktopFrontend.csproj" Id="484134d4-1bf9-4f4e-912e-8189de0d0d52" />
+  </Folder>
+  <Folder Name="/web/">
+    <Project Path="Shared/Shared.csproj" Id="e1c8edba-fb46-4aad-b5b8-44e8d903c61f" />
+    <Project Path="WebBackend/WebBackend.csproj" Id="0ccdeb1d-6ece-4018-8049-3c328ecac60c" />
+    <Project Path="WebFrontend/WebFrontend.csproj" Id="f1dfa975-906d-4236-91e5-f3547cef15bf" />
+  </Folder>
+</Solution>

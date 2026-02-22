@@ -1,0 +1,76 @@
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background-color: #00244A;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.navbar-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+}
+
+.navbar-logo a {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #F59B00;
+    text-decoration: none;
+    font-family: 'Parkinsans', sans-serif;
+}
+
+    .navbar-logo a:hover {
+        color: #ffa920;
+    }
+
+.navbar-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-link {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+    .nav-link:hover {
+        background-color: rgba(245, 155, 0, 0.1);
+        color: #F59B00 !important;
+    }
+
+    .nav-link.active {
+        background-color: #F59B00;
+        color: #00244A;
+    }
+
+@media (max-width: 640px) {
+    .navbar-container {
+        padding: 0 1rem;
+    }
+
+    .navbar-logo a {
+        font-size: 1.2rem;
+    }
+
+    .navbar-links {
+        gap: 1rem;
+    }
+
+    .nav-link {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+    }
+}
