@@ -1,0 +1,27 @@
+﻿<div class="overflow-x-auto">
+	<table class="min-w-full border-collapse border border-gray-300">
+		<thead class="bg-gray-100">
+			<tr>
+				@foreach (var column in Columns) {
+					<th class="border border-sky-300 px-4 py-2 text-left font-semibold text-sky-700">
+						@column
+					</th>
+				}
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var row in Rows) {
+				<tr>
+					<td class="border border-gray-300 px-4 py-2 text-gray-600">
+						@row
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
+
+@code {
+	[Parameter] public List<string> Columns { get; set; } = new();
+	[Parameter] public List<string> Rows { get; set; } = new();
+}

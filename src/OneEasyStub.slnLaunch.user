@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "Nuovo profilo",
+    "Projects": [
+      {
+        "Path": "WebBackend\\WebBackend.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "WebFrontend\\WebFrontend.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

@@ -1,0 +1,104 @@
+@page "/clienti"
+@inject IClienteApiService ClienteService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+	<div class="max-w-7xl mx-auto">
+		<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+			<div>
+				<h1 class="text-4xl font-bold text-gray-900">Clienti</h1>
+				<p class="text-gray-600 mt-2">Gestione dei tuoi clienti</p>
+			</div>
+			<button class="px-6 py-3 bg-primary text-white font-semibold rounded hover:bg-primary-dark transition" @onclick="GoToCreate">+ Nuovo</button>
+		</div>
+
+		@if (isLoading) {
+			<div class="flex justify-center py-16">
+				<div class="w-12 h-12 border-4 border-gray-300 border-t-primary rounded-full animate-spin"></div>
+			</div>
+		} else if (!string.IsNullOrEmpty(errorMessage)) {
+			<div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded flex justify-between items-start">
+				<p class="text-red-600 text-sm">@errorMessage</p>
+				<button @onclick="() => errorMessage = null" class="text-red-600 hover:text-red-800">✕</button>
+			</div>
+		} else if (clienti != null && clienti.Count > 0) {
+			<div class="bg-white rounded shadow overflow-hidden">
+				<div class="overflow-x-auto">
+					<table class="w-full">
+						<thead class="bg-gray-100 border-b border-gray-200">
+							<tr>
+								<th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Ragione Sociale</th>
+								<th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Email</th>
+								<th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Città</th>
+								<th class="px-6 py-3 text-right text-sm font-semibold text-gray-700">Azioni</th>
+							</tr>
+						</thead>
+						<tbody class="divide-y divide-gray-200">
+							@foreach (var cliente in clienti) {
+								<tr class="hover:bg-gray-50 transition">
+									<td class="px-6 py-4 text-sm">
+										<a href="/clienti/@cliente.Id" class="text-primary font-medium hover:underline">@cliente.RagioneSociale</a>
+									</td>
+									<td class="px-6 py-4 text-sm text-gray-600">@cliente.Email</td>
+									<td class="px-6 py-4 text-sm text-gray-600">@cliente.Citta</td>
+									<td class="px-6 py-4 text-sm text-right space-x-2">
+										<button @onclick="() => GoToEdit(cliente.Id)" class="px-3 py-1 text-sm bg-blue-50 text-primary rounded hover:bg-blue-100 transition">Modifica</button>
+										<button @onclick="() => DeleteCliente(cliente.Id)" class="px-3 py-1 text-sm bg-red-50 text-red-600 rounded hover:bg-red-100 transition">Elimina</button>
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		} else {
+			<div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded">
+				<p class="text-gray-800 mb-4">Non ci sono clienti</p>
+				<a href="/clienti/create" class="inline-block px-4 py-2 bg-primary text-white font-semibold rounded hover:bg-primary-dark transition">Crea cliente</a>
+			</div>
+		}
+	</div>
+</div>
+
+@code {
+	private List<ClienteListDTO>? clienti;
+	private bool isLoading = true;
+	private string? errorMessage;
+
+	protected override async Task OnInitializedAsync() {
+		await LoadClienti();
+	}
+
+	private async Task LoadClienti() {
+		try {
+			isLoading = true;
+			errorMessage = null;
+			clienti = await ClienteService.GetAllAsync();
+		} catch (Exception ex) {
+			errorMessage = $"Errore nel caricamento dei clienti: {ex.Message}";
+		} finally {
+			isLoading = false;
+		}
+	}
+
+	private void GoToCreate() {
+		Navigation.NavigateTo("/clienti/create");
+	}
+
+	private void GoToEdit(int id) {
+		Navigation.NavigateTo($"/clienti/{id}/edit");
+	}
+
+	private async Task DeleteCliente(int id) {
+		if (!await JSRuntime.InvokeAsync<bool>("confirm", "Sei sicuro di voler eliminare questo cliente?"))
+			return;
+
+		try {
+			await ClienteService.DeleteAsync(id);
+			await LoadClienti();
+		} catch (Exception ex) {
+			errorMessage = $"Errore nell'eliminazione del cliente: {ex.Message}";
+		}
+	}
+}

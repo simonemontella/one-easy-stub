@@ -1,0 +1,105 @@
+@page "/clienti/{id:int}"
+
+@inject IClienteApiService ClienteService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+	<div class="max-w-4xl mx-auto">
+		@if (isLoading) {
+			<div class="flex justify-center py-16">
+				<div class="w-12 h-12 border-4 border-gray-300 border-t-primary rounded-full animate-spin"></div>
+			</div>
+		} else if (!string.IsNullOrEmpty(errorMessage)) {
+			<div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded flex justify-between items-start">
+				<p class="text-red-600 text-sm">@errorMessage</p>
+				<button @onclick="GoBack" class="text-red-600 hover:text-red-800">✕</button>
+			</div>
+		} else if (cliente != null) {
+			<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+				<div>
+					<h1 class="text-4xl font-bold text-gray-900">@cliente.RagioneSociale</h1>
+					<p class="text-gray-600 mt-2">Dettagli cliente</p>
+				</div>
+				<div class="flex gap-2 flex-wrap">
+					<a href="/clienti/@Id/edit" class="px-4 py-2 bg-primary text-white font-semibold rounded hover:bg-primary-dark transition">Modifica</a>
+					<button @onclick="DeleteCliente" class="px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 transition">Elimina</button>
+					<a href="/clienti" class="px-4 py-2 text-gray-700 border border-gray-300 font-semibold rounded hover:bg-gray-50 transition">Indietro</a>
+				</div>
+			</div>
+
+			<div class="bg-white rounded shadow p-6">
+				<div class="grid grid-cols-2 gap-6">
+					<div>
+						<p class="text-sm text-gray-600 font-semibold">Email</p>
+						<p class="text-lg text-gray-900 mt-1">@cliente.Email</p>
+					</div>
+					<div>
+						<p class="text-sm text-gray-600 font-semibold">Telefono</p>
+						<p class="text-lg text-gray-900 mt-1">@cliente.Telefono</p>
+					</div>
+					<div class="col-span-2">
+						<p class="text-sm text-gray-600 font-semibold">Indirizzo</p>
+						<p class="text-lg text-gray-900 mt-1">@cliente.Indirizzo</p>
+					</div>
+					<div>
+						<p class="text-sm text-gray-600 font-semibold">Città</p>
+						<p class="text-lg text-gray-900 mt-1">@cliente.Citta</p>
+					</div>
+					<div>
+						<p class="text-sm text-gray-600 font-semibold">CAP</p>
+						<p class="text-lg text-gray-900 mt-1">@cliente.Cap</p>
+					</div>
+					<div>
+						<p class="text-sm text-gray-600 font-semibold">Provincia</p>
+						<p class="text-lg text-gray-900 mt-1">@cliente.Provincia</p>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+</div>
+
+@code {
+	[Parameter]
+	public int Id { get; set; }
+
+	private ClienteDTO? cliente;
+	private bool isLoading = true;
+	private string? errorMessage;
+
+	protected override async Task OnInitializedAsync() {
+		await LoadCliente();
+	}
+
+	private async Task LoadCliente() {
+		try {
+			isLoading = true;
+			errorMessage = null;
+			cliente = await ClienteService.GetByIdAsync(Id);
+			if (cliente == null) {
+				errorMessage = "Cliente non trovato";
+			}
+		} catch (Exception ex) {
+			errorMessage = $"Errore nel caricamento del cliente: {ex.Message}";
+		} finally {
+			isLoading = false;
+		}
+	}
+
+	private void GoBack() {
+		Navigation.NavigateTo("/clienti");
+	}
+
+	private async Task DeleteCliente() {
+		if (!await JSRuntime.InvokeAsync<bool>("confirm", "Sei sicuro di voler eliminare questo cliente?"))
+			return;
+
+		try {
+			await ClienteService.DeleteAsync(Id);
+			Navigation.NavigateTo("/clienti");
+		} catch (Exception ex) {
+			errorMessage = $"Errore nell'eliminazione: {ex.Message}";
+		}
+	}
+}

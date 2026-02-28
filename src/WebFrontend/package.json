@@ -1,0 +1,12 @@
+{
+  "name": "webfrontend",
+  "version": "1.0.0",
+  "description": "Blazor Frontend with Tailwind CSS",
+  "scripts": {
+    "tailwind": "tailwindcss -i ./Styles/input.css -o ./wwwroot/css/tailwind.css",
+    "tailwind:watch": "tailwindcss -i ./Styles/input.css -o ./wwwroot/css/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.1"
+  }
+}

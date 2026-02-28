@@ -1,0 +1,209 @@
+@page "/ordini/{id:int}"
+
+@inject IOrdineApiService OrdineService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+	<div class="max-w-5xl mx-auto">
+		@if (isLoading) {
+			<div class="flex justify-center py-16">
+				<div class="w-12 h-12 border-4 border-gray-300 border-t-primary rounded-full animate-spin"></div>
+			</div>
+		} else if (!string.IsNullOrEmpty(errorMessage)) {
+			<div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded flex justify-between items-start">
+				<p class="text-red-600 text-sm">@errorMessage</p>
+				<button @onclick="() => errorMessage = null" class="text-red-600 hover:text-red-800">✕</button>
+			</div>
+		} else if (ordine != null) {
+			<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+				<div>
+					<h1 class="text-4xl font-bold text-gray-900">Ordine #@ordine.Id</h1>
+					<p class="text-gray-600 mt-2">@ordine.Data.ToString("dd/MM/yyyy")</p>
+				</div>
+				<div class="flex gap-2 flex-wrap">
+					<button @onclick="DeleteOrdine" class="px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 transition">Elimina</button>
+					<a href="/ordini" class="px-4 py-2 text-gray-700 border border-gray-300 font-semibold rounded hover:bg-gray-50 transition">Indietro</a>
+				</div>
+			</div>
+
+			<div class="grid gap-6">
+				<!-- Info Card -->
+				<div class="bg-white rounded shadow p-6">
+					<div class="grid grid-cols-2 gap-6">
+						<div>
+							<p class="text-sm text-gray-600 font-semibold">Cliente</p>
+							<p class="text-lg text-gray-900 mt-1 font-semibold">@ordine.ClienteRagioneSociale</p>
+						</div>
+						<div>
+							<p class="text-sm text-gray-600 font-semibold">Data</p>
+							<p class="text-lg text-gray-900 mt-1">@ordine.Data.ToString("dd/MM/yyyy")</p>
+						</div>
+						<div class="col-span-2">
+							<p class="text-sm text-gray-600 font-semibold mb-1">Totale</p>
+							<p class="text-3xl font-bold text-primary">@ordine.Totale.ToString("C")</p>
+						</div>
+					</div>
+				</div>
+
+				<!-- Linee Ordine -->
+				<div class="bg-white rounded shadow p-6">
+					<div class="flex justify-between items-center mb-6">
+						<h2 class="text-lg font-bold text-gray-900">Linee Ordine (@(ordine?.Linee?.Count ?? 0))</h2>
+						<button @onclick="ToggleNewLineForm" class="px-4 py-2 bg-primary text-white font-semibold rounded hover:bg-primary-dark transition">
+							@if (showNewLineForm) { <span>✕ Annulla</span> } else { <span>+ Nuova Linea</span> }
+						</button>
+					</div>
+
+					<!-- New Line Form -->
+					@if (showNewLineForm) {
+						<div class="mb-6 bg-gray-50 p-4 rounded border border-gray-200">
+							<h3 class="text-sm font-semibold text-gray-900 mb-4">Aggiungi Linea Ordine</h3>
+							<div class="grid grid-cols-2 gap-4 mb-4">
+								<div>
+									<label class="block text-sm font-semibold text-gray-700 mb-2">Descrizione *</label>
+									<input type="text" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary focus:ring-opacity-20" @bind="newLinea.Prodotto" placeholder="Descrizione prodotto" />
+								</div>
+								<div>
+									<label class="block text-sm font-semibold text-gray-700 mb-2">Quantità *</label>
+									<input type="number" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary focus:ring-opacity-20" @bind="newLinea.Quantita" min="1" />
+								</div>
+								<div>
+									<label class="block text-sm font-semibold text-gray-700 mb-2">Prezzo Unitario *</label>
+									<input type="number" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary focus:ring-opacity-20" @bind="newLinea.PrezzoUnitario" min="0" step="0.01" />
+								</div>
+								<div>
+									<label class="block text-sm font-semibold text-gray-700 mb-2">Totale</label>
+									<input type="text" class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 cursor-not-allowed" value="@(newLinea.Quantita * newLinea.PrezzoUnitario).ToString("C")" disabled />
+								</div>
+							</div>
+							<div class="flex gap-2">
+								<button @onclick="AddNewLinea" class="px-4 py-2 bg-primary text-white font-semibold rounded hover:bg-primary-dark transition" disabled="@isSubmitting">
+									Aggiungi Linea
+								</button>
+								<button @onclick="ToggleNewLineForm" class="px-4 py-2 text-gray-700 border border-gray-300 font-semibold rounded hover:bg-gray-50 transition">
+									Annulla
+								</button>
+							</div>
+						</div>
+					}
+
+					<!-- Linee Table -->
+					@if (ordine?.Linee == null || ordine.Linee.Count == 0) {
+						<p class="text-gray-600">Non ci sono linee di ordine</p>
+					} else {
+						<div class="overflow-x-auto">
+							<table class="w-full">
+								<thead class="bg-gray-100 border-b border-gray-200">
+									<tr>
+										<th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Descrizione</th>
+										<th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">Quantità</th>
+										<th class="px-6 py-3 text-right text-sm font-semibold text-gray-700">Prezzo</th>
+										<th class="px-6 py-3 text-right text-sm font-semibold text-gray-700">Totale</th>
+										<th class="px-6 py-3 text-right text-sm font-semibold text-gray-700">Azioni</th>
+									</tr>
+								</thead>
+								<tbody class="divide-y divide-gray-200">
+									@foreach (var linea in ordine.Linee) {
+										<tr class="hover:bg-gray-50 transition">
+											<td class="px-6 py-4 text-sm text-gray-900">@linea.Prodotto</td>
+											<td class="px-6 py-4 text-sm text-center text-gray-600">@linea.Quantita</td>
+											<td class="px-6 py-4 text-sm text-right text-gray-600">@linea.PrezzoUnitario.ToString("C")</td>
+											<td class="px-6 py-4 text-sm text-right font-semibold text-gray-900">@linea.Subtotale.ToString("C")</td>
+											<td class="px-6 py-4 text-sm text-right space-x-2">
+												<button @onclick="() => EditLinea(linea.ID)" class="px-3 py-1 text-sm bg-blue-50 text-primary rounded hover:bg-blue-100 transition">Modifica</button>
+												<button @onclick="() => DeleteLinea(linea.ID)" class="px-3 py-1 text-sm bg-red-50 text-red-600 rounded hover:bg-red-100 transition">Elimina</button>
+											</td>
+										</tr>
+									}
+								</tbody>
+							</table>
+						</div>
+					}
+				</div>
+			</div>
+		}
+	</div>
+</div>
+
+@code {
+	[Parameter]
+	public int Id { get; set; }
+
+	private OrdineDTO? ordine;
+	private bool isLoading = true;
+	private bool isSubmitting = false;
+	private bool showNewLineForm = false;
+	private string? errorMessage;
+	private LineaOrdine newLinea = new();
+
+	protected override async Task OnInitializedAsync() {
+		await LoadOrdine();
+	}
+
+	private async Task LoadOrdine() {
+		try {
+			isLoading = true;
+			errorMessage = null;
+			ordine = await OrdineService.GetByIdAsync(Id);
+			if (ordine == null) {
+				errorMessage = "Ordine non trovato";
+			}
+		} catch (Exception ex) {
+			errorMessage = $"Errore nel caricamento dell'ordine: {ex.Message}";
+		} finally {
+			isLoading = false;
+		}
+	}
+
+	private void ToggleNewLineForm() {
+		showNewLineForm = !showNewLineForm;
+		if (!showNewLineForm) {
+			newLinea = new();
+		}
+	}
+
+	private async Task AddNewLinea() {
+		if (isSubmitting || ordine == null) return;
+
+		try {
+			isSubmitting = true;
+			await OrdineService.AddLineaAsync(Id, newLinea);
+			await LoadOrdine();
+			showNewLineForm = false;
+			newLinea = new();
+		} catch (Exception ex) {
+			errorMessage = $"Errore nell'aggiunta della linea: {ex.Message}";
+		} finally {
+			isSubmitting = false;
+		}
+	}
+
+	private async Task EditLinea(int lineaId) {
+		Navigation.NavigateTo($"/ordini/{Id}/linee/{lineaId}/edit");
+	}
+
+	private async Task DeleteLinea(int lineaId) {
+		if (!await JSRuntime.InvokeAsync<bool>("confirm", "Sei sicuro di voler eliminare questa linea?"))
+			return;
+
+		try {
+			await OrdineService.DeleteLineaAsync(Id, lineaId);
+			await LoadOrdine();
+		} catch (Exception ex) {
+			errorMessage = $"Errore nell'eliminazione: {ex.Message}";
+		}
+	}
+
+	private async Task DeleteOrdine() {
+		if (!await JSRuntime.InvokeAsync<bool>("confirm", "Sei sicuro di voler eliminare questo ordine?"))
+			return;
+
+		try {
+			await OrdineService.DeleteAsync(Id);
+			Navigation.NavigateTo("/ordini");
+		} catch (Exception ex) {
+			errorMessage = $"Errore nell'eliminazione: {ex.Message}";
+		}
+	}
+}

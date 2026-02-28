@@ -1,13 +1,19 @@
-﻿namespace Shared.DTO {
-	public class OrdineDTO {
+﻿using Shared.Models;
 
-		public int Id { get; set; }
+namespace Shared.DTO {
+	public class CreateOrdineDTO {
 		public int ClienteId { get; set; }
-		public string ClienteNome { get; set; }
-
 		public DateTime Data { get; set; }
 		public float Totale { get; set; }
+		public List<LineaOrdine>? Linee { get; set; }
+	}
 
-		public int NumeroLinee { get; set; }
+	public class OrdineDTO {
+		public int Id { get; set; }
+		public int ClienteId { get; set; }
+		public string ClienteRagioneSociale { get; set; } = null!;
+		public DateTime Data { get; set; }
+		public float Totale { get; set; }
+		public List<LineaOrdine> Linee { get; set; } = [];
 	}
 }

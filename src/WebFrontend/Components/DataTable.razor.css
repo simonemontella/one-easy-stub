@@ -1,0 +1,24 @@
+﻿
+.data-table table {
+    @apply w-full border-collapse bg-white shadow-md rounded-lg overflow-hidden;
+}
+
+.data-table thead {
+    @apply bg-gradient-to-r from-blue-600 to-blue-700 text-white;
+}
+
+.data-table th {
+    @apply px-6 py-3 text-left font-semibold text-sm;
+}
+
+.data-table tbody tr {
+    @apply border-b border-gray-200 hover:bg-blue-50 transition-colors;
+}
+
+.data-table td {
+    @apply px-6 py-3 text-sm text-gray-700;
+}
+
+.data-table tbody tr:last-child {
+    @apply border-b-0;
+}
